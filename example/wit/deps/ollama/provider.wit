@@ -1,5 +1,0 @@
-package thomastaylor312:ollama;
-
-world provider-ollama {
-    export generate;
-}

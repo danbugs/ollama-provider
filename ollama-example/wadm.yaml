@@ -1,0 +1,47 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: ollama-example
+  annotations:
+    description: 'Ollama demo'
+spec:
+  components:
+    - name: http-component
+      type: component
+      properties:
+        image: file://./build/ollama_example.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 1
+        - type: link
+          properties:
+            target: ollama
+            namespace: thomastaylor312
+            package: ollama
+            interfaces: [generate]
+            target_config:
+              - name: ollama-conf
+                properties:
+                  model_name: gurubot/tinystories-656k-q8
+
+    - name: httpserver
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/http-server:0.23.2
+      traits:
+        - type: link
+          properties:
+            target: http-component
+            namespace: wasi
+            package: http
+            interfaces: [incoming-handler]
+            source_config:
+              - name: default-http
+                properties:
+                  address: 127.0.0.1:8000
+
+    - name: ollama
+      type: capability
+      properties:
+        image: file://../build/ollama-provider.par.gz
